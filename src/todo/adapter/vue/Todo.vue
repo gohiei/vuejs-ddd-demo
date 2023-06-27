@@ -164,7 +164,7 @@ export default {
           <div class="view">
             <input class="toggle" type="checkbox" :checked="todo.completed" @click="updateStatus(todo)">
             <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
-            <button class="destroy" @click="removeTodo(todo)">X</button>
+            <button class="destroy" @click="removeTodo(todo)"></button>
           </div>
           <input
             v-if="todo === editedTodo"
