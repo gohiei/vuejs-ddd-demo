@@ -1,30 +1,40 @@
-<!-- eslint-disable vue/multi-word-component-names -->
-<script>
+<script lang="ts">
 
+import { defineComponent } from 'vue'
 import { InMemoryTodoRepository } from '../in.memory.todo.repository';
 import { TodoUsecaseFactory } from '../../usecase/usecase'
+import type { TodoDto } from '../../usecase/list.todo.usecase'
 
-export default {
+const EmptyTodo: TodoDto = {
+  id: 0,
+  title: '',
+  completed: false,
+  visibility: false,
+};
+
+export default defineComponent({
   data: () => {
     const repo = new InMemoryTodoRepository();
     const factory = TodoUsecaseFactory(repo);
-    const { todos } = factory.listTodo.execute();
 
     return {
       factory,
-      todos,
+      todos: new Array<TodoDto>(),
       visibility: 'all',
-      editedTodo: null,
+      editedTodo: EmptyTodo,
+      beforeEditCache: '',
     };
   },
 
   mounted() {
     window.addEventListener('hashchange', this.onHashChange)
     this.onHashChange()
+
+    this.loadTodos();
   },
 
   computed: {
-    total() {
+    total(): number {
       if (this.visibility === 'all') {
         return this.todos.length;
       }
@@ -32,7 +42,7 @@ export default {
       return this.total;
     },
 
-    remaining() {
+    remaining(): number {
       if (this.visibility !== 'completed') {
         return this.todos.filter(t => !t.completed).length;
       }
@@ -42,7 +52,7 @@ export default {
   },
 
   methods: {
-    toggleAll(e) {
+    toggleAll(e: any): void {
       const isCompleted = !e.target.checked;
       const usecase = isCompleted ? 'activateTodo' : 'completeTodo';
 
@@ -56,11 +66,10 @@ export default {
     loadTodos() {
       const visibility = this.visibility;
       const { todos } = this.factory.listTodo.execute({ filter: visibility });
-      console.log(todos);
       this.todos = todos;
     },
 
-    addTodo(e) {
+    addTodo(e: any) {
       const input = {
         desc: e.target.value.trim(),
       };
@@ -71,12 +80,12 @@ export default {
       this.loadTodos();
     },
 
-    removeTodo(todo) {
+    removeTodo(todo: TodoDto) {
       this.factory.removeTodo.execute({ id: todo.id });
       this.loadTodos();
     },
 
-    updateStatus(todo) {
+    updateStatus(todo: TodoDto) {
       if (!todo.completed) {
         this.factory.completeTodo.execute({ id: todo.id });
       } else {
@@ -86,17 +95,17 @@ export default {
       this.loadTodos();
     },
 
-    editTodo(todo) {
+    editTodo(todo: TodoDto) {
       this.beforeEditCache = todo.title
       this.editedTodo = todo
     },
 
-    doneEdit(todo) {
+    doneEdit(todo: TodoDto) {
       if (!this.editedTodo) {
         return
       }
 
-      this.editedTodo = null
+      this.editedTodo = EmptyTodo
       const title = todo.title.trim()
 
       if (title) {
@@ -108,8 +117,8 @@ export default {
       this.loadTodos();
     },
 
-    cancelEdit(todo) {
-      this.editedTodo = null
+    cancelEdit(todo: TodoDto) {
+      this.editedTodo = EmptyTodo
       todo.title = this.beforeEditCache
     },
 
@@ -132,7 +141,8 @@ export default {
       this.loadTodos();
     }
   }
-}
+})
+
 </script>
 <template>
   <section class="todoapp">
@@ -171,7 +181,7 @@ export default {
             class="edit"
             type="text"
             v-model="todo.title"
-            @vnode-mounted="({ el }) => el.focus()"
+            @vnode-mounted="(node: any) => node.el.focus()"
             @blur="doneEdit(todo)"
             @keyup.enter="doneEdit(todo)"
             @keyup.escape="cancelEdit(todo)"
@@ -195,7 +205,7 @@ export default {
           <a href="#/completed" :class="{ selected: visibility === 'completed' }">Completed</a>
         </li>
       </ul>
-      <button class="clear-completed" @click="removeCompleted" v-show="total > remaining & visibility !== 'active'">
+      <button class="clear-completed" @click="removeCompleted" v-show="total > remaining && visibility !== 'active'">
         Clear completed
       </button>
     </footer>

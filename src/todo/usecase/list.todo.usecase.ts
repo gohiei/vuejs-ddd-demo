@@ -1,6 +1,6 @@
 import type { TodoRepository } from "../repository/todo.repository";
 
-type TodoDto = {
+export type TodoDto = {
   id: number;
   title: string;
   completed: boolean;

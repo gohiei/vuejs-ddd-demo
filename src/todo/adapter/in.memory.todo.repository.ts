@@ -6,7 +6,6 @@ export class InMemoryTodoRepository implements TodoRepository {
 
   save(todo: Todo): void {
     this.todos.set(todo.getId(), todo);
-    console.log(this.todos);
   }
 
   loadTodos(filter: string): Array<Todo> {
@@ -15,8 +14,6 @@ export class InMemoryTodoRepository implements TodoRepository {
       : (filter === 'completed' ? TODO_STATUS.COMPLETED : 0);
 
     const t = new Array<Todo>();
-
-    console.log(filter);
 
     Array.from(this.todos.values())
       .filter((todo) => !status || todo.isStatus(status))
